@@ -1,1 +1,1 @@
-java Emulator hello_world.gb
+java Emulator %1
