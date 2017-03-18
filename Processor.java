@@ -124,15 +124,15 @@ public class Processor {
     public void swapNibbles() {
       int val = getValue();
       int old_low = val & 0x0F;
-      int old_high = (val >> 4) & 0x0F;
+      int old_high = (val >>> 4) & 0x0F;
       realValue = old_high + (old_low << 4);
     }
 
     public void shiftRightSigned() {
-      realValue >>>= 1;
+      realValue >>= 1;
     }
     public void shiftRightUnsigned() {
-      realValue >>= 1;
+      realValue >>>= 1;
     }
 
     public void shiftLeft() {
@@ -149,7 +149,7 @@ public class Processor {
       return !(bitValue == 0);
     }
 
-    public boolean hasCarry() {
+    /*public boolean hasCarry() {
       // This assumes the register already has the new value set, so the
       // carry can be determined.
       int carryMask = mask() + 1;
@@ -161,7 +161,7 @@ public class Processor {
       // half-carry can be determined.
       int halfCarryMask = (mask() + 1) / 2;
       return ((getValue() & halfCarryMask) == halfCarryMask);
-    }
+    }*/
   }
 
   public class SixteenBitRegister extends BitRegister {
@@ -198,6 +198,10 @@ public class Processor {
         value |= 0x10;
       }
       return value;
+    }
+
+    public boolean hasCarry() {
+      return carry;
     }
 
     public void setHalfCarry() {
