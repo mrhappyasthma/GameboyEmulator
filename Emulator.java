@@ -16,18 +16,21 @@ public class Emulator {
       return null;
     }
     if (instruction.opcode == 0xCB) {  // Handle 0xCB two-byte opcodes.
-      opcode = memoryMap.readByte(processor);
+      opcode = memoryMap.readByte(processor.pc.getValue());
+      processor.pc.increment();
       instruction = Instruction.prefixCBForOpcode(opcode);
     }
     return instruction;
   }
 
-  private static void runGameboy(byte[] ROM) {
-    MemoryMap memoryMap = new MemoryMap(ROM);
+  private static void runGameboy(byte[] ROM, byte[] BIOS) {
+    GPU gpu = new GPU();
+    MemoryMap memoryMap = new MemoryMap(ROM, BIOS);
     Processor processor = new Processor();
     while (true) {
       // 1. Fetch instruction (and increment program counter).
-      int opcode = memoryMap.readByte(processor);
+      int opcode = memoryMap.readByte(processor.pc.getValue());
+      processor.pc.increment();
 
       // 2. Decode instruction.
       Instruction instruction = decode(opcode, processor, memoryMap);
@@ -78,13 +81,45 @@ public class Emulator {
     return bytes;
   }
 
+    private static byte[] readBIOS() {
+    DataInputStream dataInputStream = null;
+    FileInputStream inputStream = null;
+    byte[] bytes = null;
+    try {
+      try {
+        String filePath = "bios/gbc_bios.bin";
+        File f = new File(filePath);
+        bytes = new byte[256];
+        inputStream = new FileInputStream(f);
+        dataInputStream = new DataInputStream(inputStream);
+        dataInputStream.readFully(bytes, 0, bytes.length);
+      } finally {
+        if (inputStream != null) {
+          inputStream.close();
+        }
+        if (dataInputStream != null) {
+          dataInputStream.close();
+        }
+      }
+    } catch (IOException e) {
+      System.out.println(e.getStackTrace());
+      bytes = null;
+    }
+    return bytes;
+  }
+
   public static void main(String[] args) {
     if (args.length != 1) {
       System.out.println("Error: Please add the ROM file name as an argument.");
       return;
     }
 
-    // TODO(mrhappyasthma): Read BIOS.
+    System.out.println("Loading BIOS...");
+    byte[] BIOS = readBIOS();
+    if (BIOS == null) {
+      System.out.println("Error reading BIOS.");
+      return;
+    }
 
     System.out.println("Loading ROM...");
     byte[] ROM = readROM(args[0]);
@@ -95,6 +130,6 @@ public class Emulator {
     System.out.println("ROM loaded successfully!");
 
     System.out.println("Starting Gameboy...");
-    runGameboy(ROM);
+    runGameboy(ROM, BIOS);
   }
 }
