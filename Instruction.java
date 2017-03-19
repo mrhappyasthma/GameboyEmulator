@@ -1275,7 +1275,7 @@ public class Instruction {
       case 0xCB:
         return new Instruction(opcode, "PREFIX CB", 1, 4, new Executable() {
           public void execute(Instruction instruction, Processor processor, MemoryMap memoryMap) {
-            // Do work.
+            // Intentionally Empty.
           }
         });
       case 0xCC:
